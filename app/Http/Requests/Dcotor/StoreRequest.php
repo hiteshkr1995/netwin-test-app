@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Dcotor;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\TimeAvailability;
 
 class StoreRequest extends FormRequest
 {
@@ -24,7 +25,11 @@ class StoreRequest extends FormRequest
     public function rules()
     {
         return [
-            'doctor_id' => ['required', 'exists:doctors,id'],
+            'doctor_id' => ['required', 'exists:doctors,id', function ($attribute, $value, $fail) {
+                if (TimeAvailability::where('doctor_id', $value)->exists()) {
+                    $fail("For this doctor time availability already added please change.");
+                }
+            }],
             'days' => ['required', 'array', 'min:1'],
         ];
     }
