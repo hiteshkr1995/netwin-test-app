@@ -5,6 +5,16 @@
 git clone https://github.com/hiteshkr1995/netwin-test-app.git
 ```
 
+### Change directory
+```
+cd netwin-test-app
+```
+
+### Create .env
+```
+cp .env.example .env
+```
+
 ### Install vedor
 ```
 composer install

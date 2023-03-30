@@ -18,7 +18,7 @@ class DoctorController extends Controller
      */
     public function index()
     {
-        $doctors = Doctor::all();
+        $doctors = Doctor::has('timeAvailabilities')->get();
 
         return view('welcome', compact('doctors'));
     }
@@ -50,15 +50,15 @@ class DoctorController extends Controller
             if(isset($request->days[$key])) {
                 $requestDay = $request->days[$key];
 
-                $timeAvailability->open_status =  true;
-                $timeAvailability->start_time =  Carbon::parse($requestDay['start_time'])->format('H:i:s');
-                $timeAvailability->end_time =  Carbon::parse($requestDay['end_time'])->format('H:i:s');
+                $timeAvailability->open_status = true;
+                $timeAvailability->start_time = Carbon::parse($requestDay['start_time'])->format('H:i:s');
+                $timeAvailability->end_time = Carbon::parse($requestDay['end_time'])->format('H:i:s');
             }
 
             $timeAvailability->save();
         }
 
-        return redirect()->route('doctors.index');
+        return redirect()->route('doctors.index')->with('status', 'Added time availability!');
     }
 
     /**
@@ -80,7 +80,10 @@ class DoctorController extends Controller
      */
     public function edit(Doctor $doctor)
     {
-        return view('time-availability.edit');
+        $doctor->load('timeAvailabilities');
+        $days = TimeAvailability::DAYS;
+
+        return view('time-availability.edit', compact('doctor', 'days'));
     }
 
     /**
@@ -92,7 +95,23 @@ class DoctorController extends Controller
      */
     public function update(UpdateRequest $request, Doctor $doctor)
     {
-        //
+        foreach ($doctor->timeAvailabilities as $key => $timeAvailability) {
+            if(isset($request->days[$timeAvailability->days])) {
+                $requestDay = $request->days[$timeAvailability->days];
+
+                $timeAvailability->open_status = true;
+                $timeAvailability->start_time = Carbon::parse($requestDay['start_time'])->format('H:i:s');
+                $timeAvailability->end_time = Carbon::parse($requestDay['end_time'])->format('H:i:s');
+            } else {
+                $timeAvailability->open_status = false;
+                $timeAvailability->start_time = 0;
+                $timeAvailability->end_time = 0;
+            }
+
+            $timeAvailability->save();
+        }
+
+        return redirect()->route('doctors.index')->with('status', 'Updated time availability!');
     }
 
     /**
@@ -103,6 +122,7 @@ class DoctorController extends Controller
      */
     public function destroy(Doctor $doctor)
     {
-        //
+        request()->session()->flash('status', 'Deleted successful!');
+        return $doctor->timeAvailabilities()->delete();
     }
 }

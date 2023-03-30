@@ -18,4 +18,9 @@ class TimeAvailability extends Model
         6 => "Saturday",
         7 => "Sunday",
     ];
+
+    protected $casts = [
+        'start_time' => 'datetime',
+        'end_time' => 'datetime',
+    ];
 }
