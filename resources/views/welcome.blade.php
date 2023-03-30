@@ -12,27 +12,27 @@
 
     <hr>
 
-    <form method="GET">
+    <form method="GET" autocomplete="off">
         <div class="row">
 
             <div class="col">
-                <input type="text" name="doctor_name" class="form-control" placeholder="Enter name">
+                <input type="text" name="doctor_name" value="{{ request()->doctor_name }}" class="form-control" placeholder="Enter name">
             </div>
             <div class="col">
                 <select class="form-select" name="day">
                     <option selected value="">Select day</option>
-                    <option value="1">One</option>
-                    <option value="2">Two</option>
-                    <option value="3">Three</option>
+                        @foreach ($days as $key => $day)
+                            <option value="{{$key}}" @if (request()->day == $key) selected @endif>{{$day}}</option>
+                        @endforeach
                 </select>
             </div>
             <div class="col">
                 <div class="row">
                     <div class="col">
-                        <input type="text" name="start_time" class="form-control" placeholder="Start time">
+                        <input type="text" name="start_time" value="{{ request()->start_time }}" class="form-control timepicker" placeholder="Start time">
                     </div>
                     <div class="col">
-                        <input type="text" name="end_time" class="form-control" placeholder="End time">
+                        <input type="text" name="end_time" value="{{ request()->end_time }}" class="form-control timepicker" placeholder="End time">
                     </div>
                 </div>
             </div>
@@ -81,6 +81,8 @@
 @endsection
 
 @push('styles')
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.css">
+
     <style>
         .edit-button {
             text-decoration: none;
@@ -95,7 +97,10 @@
 @endpush
 
 @push('scripts')
+<script src="//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.js"></script>
 <script>
+
+    $('input.timepicker').timepicker({});
 
     function openDeleteConfirm(event, id) {
         Swal.fire({

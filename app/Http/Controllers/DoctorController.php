@@ -8,6 +8,7 @@ use App\Models\TimeAvailability;
 use App\Http\Requests\Dcotor\StoreRequest;
 use App\Http\Requests\Dcotor\UpdateRequest;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 
 class DoctorController extends Controller
 {
@@ -16,11 +17,32 @@ class DoctorController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $doctors = Doctor::has('timeAvailabilities')->get();
+        $doctors = Doctor::whereHas('timeAvailabilities', function (Builder $query) use ($request) {
+            $query->when($request->day, function ($query, $day) {
+                return $query->where('days', $day)
+                ->where('open_status', true);
+            });
 
-        return view('welcome', compact('doctors'));
+            if ($request->start_time && $request->end_time) {
+                $startEndTime = [
+                    Carbon::parse($request->start_time)->format('H:i:s'),
+                    Carbon::parse($request->end_time)->format('H:i:s'),
+                ];
+                $query->whereBetween('start_time', $startEndTime)
+                ->whereBetween('end_time', $startEndTime)
+                ->when(!$request->day, function ($query, $day) {
+                    return $query->where('open_status', true);
+                });;
+            }
+        })->when($request->doctor_name, function ($query, $doctorName) {
+            return $query->where('name', 'like', "%{$doctorName}%");
+        })->get();
+
+        $days = TimeAvailability::DAYS;
+
+        return view('welcome', compact('doctors', 'days'));
     }
 
     /**
